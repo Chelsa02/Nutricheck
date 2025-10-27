@@ -1,0 +1,42 @@
+{
+  "meals": [
+    {
+      "id": "m1",
+      "name": "Oats porridge with fruits",
+      "type": "Breakfast",
+      "calories": 320,
+      "description": "Wholegrain oats with skim milk and seasonal fruits."
+    },
+    {
+      "id": "m2",
+      "name": "Grilled chicken salad",
+      "type": "Lunch",
+      "calories": 420,
+      "description": "Leafy greens, grilled chicken, olive oil dressing."
+    },
+    {
+      "id": "m3",
+      "name": "Moong dal and vegetables",
+      "type": "Dinner",
+      "calories": 380,
+      "description": "Protein-rich dal with mixed veggies and brown rice."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "r1",
+      "title": "For Diabetic Patients",
+      "description": "Prefer low glycemic-index carbs, avoid sugary drinks, replace white rice with brown rice."
+    },
+    {
+      "id": "r2",
+      "title": "For Thyroid Patients",
+      "description": "Ensure adequate iodine and selenium; avoid very high soy intake close to medication time."
+    },
+    {
+      "id": "r3",
+      "title": "For B12 Deficiency",
+      "description": "Include fortified cereals, dairy, and consider supplementation after consulting a doctor."
+    }
+  ]
+}
