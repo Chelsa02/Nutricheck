@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="NutriCheck - Personalized meal planning for special diets" />
+    <title>NutriCheck</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 16px;
+        background: white;
+        min-height: 100vh;
+      }
+      .title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 14px;
+        margin-bottom: 12px;
+        color: #444;
+      }
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      button {
+        flex: 1;
+        padding: 12px 16px;
+        background: #007AFF;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0051D5;
+      }
+      .card {
+        padding: 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
+      .card-title {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      .card-subtitle {
+        font-size: 14px;
+        color: #666;
+      }
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+      nav {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        padding-bottom: 10px;
+      }
+      nav button {
+        background: none;
+        border: none;
+        color: #007AFF;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0;
+      }
+      nav button:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <nav>
+        <button onclick="showScreen('home')">Home</button>
+        <button onclick="showScreen('meals')">Meal Plan</button>
+        <button onclick="showScreen('recommendations')">Recommendations</button>
+        <button onclick="showScreen('settings')">Settings</button>
+      </nav>
+
+      <!-- Home Screen -->
+      <div id="home" class="screen active">
+        <div class="title">Welcome to NutriCheck</div>
+        <div class="subtitle">Personalized meal planning for special diets</div>
+        <div class="button-group">
+          <button onclick="showScreen('meals')">View Meal Plan</button>
+          <button onclick="showScreen('recommendations')">Recommendations</button>
+        </div>
+        <div id="home-meals"></div>
+      </div>
+
+      <!-- Meal Plan Screen -->
+      <div id="meals" class="screen">
+        <div class="title">Today's Meal Plan</div>
+        <div id="meals-list"></div>
+      </div>
+
+      <!-- Recommendations Screen -->
+      <div id="recommendations" class="screen">
+        <div class="title">Diet Recommendations</div>
+        <div id="recommendations-list"></div>
+      </div>
+
+      <!-- Settings Screen -->
+      <div id="settings" class="screen">
+        <div class="title">Settings</div>
+        <p>Manage your preferences here.</p>
+      </div>
+    </div>
+
+    <script>
+      const meals = [
+        { id: 'm1', name: 'Oats porridge with fruits', type: 'Breakfast', calories: 320, description: 'Wholegrain oats with skim milk and seasonal fruits.' },
+        { id: 'm2', name: 'Grilled chicken salad', type: 'Lunch', calories: 420, description: 'Leafy greens, grilled chicken, olive oil dressing.' },
+        { id: 'm3', name: 'Moong dal and vegetables', type: 'Dinner', calories: 380, description: 'Protein-rich dal with mixed veggies and brown rice.' },
+      ];
+
+      const recommendations = [
+        { id: 'r1', title: 'For Diabetic Patients', description: 'Prefer low glycemic-index carbs, avoid sugary drinks, replace white rice with brown rice.' },
+        { id: 'r2', title: 'For Thyroid Patients', description: 'Ensure adequate iodine and selenium; avoid very high soy intake close to medication time.' },
+        { id: 'r3', title: 'For B12 Deficiency', description: 'Include fortified cereals, dairy, and consider supplementation after consulting a doctor.' },
+      ];
+
+      function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+      }
+
+      function renderMeal(meal, showDescription = false) {
+        const html = `
+          <div class="card">
+            <div class="card-title">${meal.name}</div>
+            <div class="card-subtitle">${meal.calories} kcal • ${meal.type}</div>
+            ${showDescription ? `<div style="margin-top: 6px; font-size: 13px;">${meal.description}</div>` : ''}
+          </div>
+        `;
+        return html;
+      }
+
+      function renderRecommendation(rec) {
+        return `
+          <div style="padding: 10px; border-bottom: 1px solid #eee;">
+            <div style="font-weight: 600;">${rec.title}</div>
+            <div style="font-size: 14px; color: #666;">${rec.description}</div>
+          </div>
+        `;
+      }
+
+      // Render meals on home screen
+      document.getElementById('home-meals').innerHTML = meals.map(m => renderMeal(m)).join('');
+
+      // Render meals on meal plan screen
+      document.getElementById('meals-list').innerHTML = meals.map(m => renderMeal(m, true)).join('');
+
+      // Render recommendations
+      document.getElementById('recommendations-list').innerHTML = recommendations.map(renderRecommendation).join('');
+    </script>
+  </body>
+</html>
