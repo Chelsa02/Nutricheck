@@ -1,13 +1,16 @@
 
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import MealPlanScreen from './screens/MealPlanScreen';
 import RecommendationScreen from './screens/RecommendationScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-const Stack = createNativeStackNavigator();
+// Use web-friendly stack on web, native-stack elsewhere
+const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
 
 export default function App() {
   return (
