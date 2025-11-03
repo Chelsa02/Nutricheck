@@ -10,7 +10,9 @@
       "web"
     ],
     "orientation": "portrait",
-    
+    "web": {
+      "bundler": "metro"
+    },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
