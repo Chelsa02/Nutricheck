@@ -149,12 +149,11 @@
         }
 
         function recognizeFood(filename) {
-            const lower = filename.toLowerCase();
-            for (let key in foodDatabase) {
-                if (lower.includes(key)) return foodDatabase[key];
-            }
-            const random = Object.values(foodDatabase)[Math.floor(Math.random() * Object.keys(foodDatabase).length)];
-            return random;
+            // Simulate AI analyzing the image and returning random meal each time
+            // In production, this would call Hugging Face API or Google Cloud Vision
+            const keys = Object.keys(foodDatabase);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            return foodDatabase[randomKey];
         }
 
         function analyzeImage() {
