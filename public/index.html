@@ -4,9 +4,812 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1f1f1f" />
-    <meta name="description" content="NutriCheck - AI-Powered Nutrition" />
-    <title>NutriCheck</title>
+    <meta name="description" content="NutriCheck - AI-Powered Nutrition Analysis" />
+    <title>NutriCheck - Meal Analysis & AI Nutrition</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: #1a1a1a;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #2a2a2a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #26d07c 0%, #1ec96a 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-nav button {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .header-nav button:hover,
+        .header-nav button.active {
+            color: #26d07c;
+            background: rgba(38, 208, 124, 0.1);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            min-height: calc(100vh - 60px);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #26d07c 0%, #1ec96a 50%, #6b5eee 100%);
+            border-radius: 16px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .hero-tag {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #26d07c;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #26d07c;
+            background: #1f1f1f;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon.orange { background: rgba(255, 153, 0, 0.2); }
+        .stat-icon.teal { background: rgba(38, 208, 124, 0.2); }
+        .stat-icon.purple { background: rgba(107, 94, 238, 0.2); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* Section */
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 28px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #2a2a2a;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #1a1a1a;
+        }
+
+        .upload-area:hover {
+            border-color: #26d07c;
+            background: rgba(38, 208, 124, 0.05);
+        }
+
+        .upload-area.active {
+            border-color: #26d07c;
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .upload-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* Analysis Result */
+        .analysis-result {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 32px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2a2a2a;
+            border-top-color: #26d07c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .nutrition-item {
+            background: #0f0f0f;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            text-align: center;
+        }
+
+        .nutrition-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .nutrition-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #26d07c;
+        }
+
+        .nutrition-unit {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Recommendations */
+        .rec-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .rec-card:hover {
+            border-color: #26d07c;
+        }
+
+        .rec-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #26d07c;
+        }
+
+        .rec-desc {
+            font-size: 13px;
+            color: #bbb;
+            line-height: 1.6;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 16px;
+            height: 200px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #26d07c, #1ec96a);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            min-width: 40px;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #26d07c;
+            font-weight: 600;
+        }
+
+        .meal-log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .meal-log-info {
+            flex: 1;
+        }
+
+        .meal-log-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .meal-log-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .meal-log-cal {
+            font-size: 16px;
+            font-weight: 700;
+            color: #26d07c;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .header-nav { gap: 10px; }
+            .main { padding: 24px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">N</div>
+            <span>NutriCheck</span>
+        </div>
+        <div class="header-nav">
+            <button class="active" onclick="switchTab('home', event)">Home</button>
+            <button onclick="switchTab('analyze', event)">Analyze</button>
+            <button onclick="switchTab('meal-log', event)">Meal Log</button>
+            <button onclick="switchTab('diet-plan', event)">Diet Plan</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Home Screen -->
+        <div id="home" class="screen active">
+            <div class="hero">
+                <div class="hero-tag">🌟 AI-POWERED NUTRITION</div>
+                <h1>NutriCheck</h1>
+                <p>Snap your meal. Know your nutrition.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="switchTab('analyze', {target: {textContent: 'Analyze'}})">Upload a Meal Photo →</button>
+                    <button class="btn btn-secondary" onclick="switchTab('diet-plan', {target: {textContent: 'Diet Plan'}})">Generate Diet Plan</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon orange">🔥</div>
+                    <div class="stat-value" id="total-cal">0</div>
+                    <div class="stat-label">kcal consumed today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon teal">🍽️</div>
+                    <div class="stat-value" id="total-meals">0</div>
+                    <div class="stat-label">meals logged</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">✨</div>
+                    <div class="stat-value">Active</div>
+                    <div class="stat-label">analysis ready</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Today's Nutrition</h2>
+            <div class="chart-container">
+                <div class="chart-title">Macronutrient Breakdown</div>
+                <div class="bar-chart">
+                    <div class="bar" style="height: 0%; margin-top: 100%;">
+                        <div class="bar-value">0g</div>
+                        <div class="bar-label">Protein</div>
+                    </div>
+                    <div class="bar" style="height: 0%; margin-top: 100%;">
+                        <div class="bar-value">0g</div>
+                        <div class="bar-label">Carbs</div>
+                    </div>
+                    <div class="bar" style="height: 0%; margin-top: 100%;">
+                        <div class="bar-value">0g</div>
+                        <div class="bar-label">Fat</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analyze Screen -->
+        <div id="analyze" class="screen">
+            <h2 class="section-title">Meal Analysis</h2>
+            <p class="section-subtitle">Upload a photo of your meal to get instant nutrition insights powered by AI</p>
+            
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📷</div>
+                <div class="upload-title">Upload Meal Photo</div>
+                <div class="upload-subtitle">Click to select or drag and drop an image<br>PNG, JPG up to 50MB</div>
+            </div>
+            <input type="file" id="fileInput" class="upload-input" onchange="handleFileUpload(event)">
+
+            <div id="analysis-area"></div>
+        </div>
+
+        <!-- Meal Log Screen -->
+        <div id="meal-log" class="screen">
+            <h2 class="section-title">Meal Log</h2>
+            <p class="section-subtitle">Your meals today</p>
+            <div id="meal-log-list" style="margin-top: 24px;"></div>
+        </div>
+
+        <!-- Diet Plan Screen -->
+        <div id="diet-plan" class="screen">
+            <h2 class="section-title">Diet Planner</h2>
+            <p class="section-subtitle">Generate personalized meal plans based on your health goals</p>
+            
+            <div style="background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 32px; max-width: 600px; margin-bottom: 40px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                    <div style="width: 40px; height: 40px; background: rgba(38, 208, 124, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">🎯</div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 600;">Daily Calorie Goal</div>
+                        <div style="font-size: 12px; color: #999;">Enter your target daily calories</div>
+                    </div>
+                </div>
+                <input type="number" id="calorieGoal" placeholder="e.g. 2000" value="2000" style="width: 100%; padding: 12px 16px; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 8px; color: white; font-size: 14px; margin-bottom: 16px;">
+                <div style="font-size: 12px; color: #999; margin-bottom: 24px;">Range: 800 - 3000 calories</div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <button class="activity-btn active" onclick="selectActivity(this, '1200')">Low<br>< 1500 kcal</button>
+                    <button class="activity-btn" onclick="selectActivity(this, '1750')">Moderate<br>1500-2000 kcal</button>
+                    <button class="activity-btn" onclick="selectActivity(this, '2500')">High<br>> 2000 kcal</button>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; background: #26d07c; color: #0f0f0f;" onclick="generatePlan()">Generate Plan</button>
+            </div>
+
+            <div id="plan-output"></div>
+        </div>
+    </div>
+
+    <script>
+        let mealLog = [];
+        let totalCalories = 0;
+
+        const mockMeals = [
+            { name: 'Chicken Salad with Olive Oil Dressing', calories: 420, protein: 35, carbs: 18, fat: 22, type: 'Lunch' },
+            { name: 'Oats with Berries & Almonds', calories: 380, protein: 12, carbs: 52, fat: 14, type: 'Breakfast' },
+            { name: 'Grilled Fish with Vegetables', calories: 450, protein: 42, carbs: 24, fat: 16, type: 'Dinner' },
+            { name: 'Greek Yogurt with Honey', calories: 180, protein: 20, carbs: 25, fat: 3, type: 'Snack' },
+            { name: 'Brown Rice & Lentils', calories: 320, protein: 16, carbs: 58, fat: 4, type: 'Lunch' },
+        ];
+
+        function switchTab(tabId, event) {
+            if (event && event.target) {
+                document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const analysisArea = document.getElementById('analysis-area');
+            analysisArea.innerHTML = `
+                <div class="analysis-result">
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px; color: #999;">Analyzing meal with AI...</p>
+                    </div>
+                </div>
+            `;
+
+            // Simulate AI analysis after 2-3 seconds
+            setTimeout(() => {
+                const randomMeal = mockMeals[Math.floor(Math.random() * mockMeals.length)];
+                const analysisTime = new Date().toLocaleTimeString();
+                
+                const result = `
+                    <div class="analysis-result">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <div>
+                                <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">${randomMeal.name}</h3>
+                                <p style="font-size: 13px; color: #999;">Analyzed at ${analysisTime}</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="addToMealLog('${randomMeal.name}', ${randomMeal.calories}, ${randomMeal.protein}, ${randomMeal.carbs}, ${randomMeal.fat})">+ Add to Log</button>
+                        </div>
+
+                        <h3 style="margin-top: 28px; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Nutritional Information</h3>
+                        <div class="nutrition-grid">
+                            <div class="nutrition-item">
+                                <div class="nutrition-label">Calories</div>
+                                <div class="nutrition-value">${randomMeal.calories}</div>
+                                <div class="nutrition-unit">kcal</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-label">Protein</div>
+                                <div class="nutrition-value">${randomMeal.protein}</div>
+                                <div class="nutrition-unit">grams</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-label">Carbs</div>
+                                <div class="nutrition-value">${randomMeal.carbs}</div>
+                                <div class="nutrition-unit">grams</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-label">Fat</div>
+                                <div class="nutrition-value">${randomMeal.fat}</div>
+                                <div class="nutrition-unit">grams</div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-top: 28px; margin-bottom: 16px; font-size: 16px; font-weight: 600;">AI Recommendations</h3>
+                        <div class="rec-card">
+                            <div class="rec-title">✅ Nutritionally Balanced</div>
+                            <div class="rec-desc">This meal provides a good balance of macronutrients. The protein content supports muscle recovery and satiety.</div>
+                        </div>
+                        <div class="rec-card">
+                            <div class="rec-title">💡 Health Tip</div>
+                            <div class="rec-desc">Consider adding more fiber-rich vegetables to improve digestive health and increase satiety.</div>
+                        </div>
+                    </div>
+                `;
+                
+                analysisArea.innerHTML = result;
+            }, 2500);
+        }
+
+        function addToMealLog(name, cal, protein, carbs, fat) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            mealLog.push({ name, calories: cal, protein, carbs, fat, time: timeStr });
+            totalCalories += cal;
+
+            document.getElementById('total-cal').textContent = totalCalories;
+            document.getElementById('total-meals').textContent = mealLog.length;
+
+            updateMealLog();
+            updateChart();
+            
+            alert('✅ Meal added to your log!');
+        }
+
+        function updateMealLog() {
+            const logList = document.getElementById('meal-log-list');
+            if (mealLog.length === 0) {
+                logList.innerHTML = '<p style="color: #999; text-align: center;">No meals logged yet. Upload a photo to get started!</p>';
+                return;
+            }
+            
+            logList.innerHTML = mealLog.map((meal, idx) => `
+                <div class="meal-log-item">
+                    <div class="meal-log-info">
+                        <div class="meal-log-name">${meal.name}</div>
+                        <div class="meal-log-time">${meal.time}</div>
+                    </div>
+                    <div class="meal-log-cal">${meal.calories} cal</div>
+                    <button onclick="removeMeal(${idx})" style="background: none; border: none; color: #999; cursor: pointer; margin-left: 16px;">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function removeMeal(idx) {
+            totalCalories -= mealLog[idx].calories;
+            mealLog.splice(idx, 1);
+            document.getElementById('total-cal').textContent = totalCalories;
+            document.getElementById('total-meals').textContent = mealLog.length;
+            updateMealLog();
+            updateChart();
+        }
+
+        function updateChart() {
+            let totalProtein = 0, totalCarbs = 0, totalFat = 0;
+            mealLog.forEach(m => {
+                totalProtein += m.protein;
+                totalCarbs += m.carbs;
+                totalFat += m.fat;
+            });
+
+            const maxValue = Math.max(totalProtein, totalCarbs, totalFat, 1);
+            const proteinHeight = (totalProtein / maxValue) * 100;
+            const carbsHeight = (totalCarbs / maxValue) * 100;
+            const fatHeight = (totalFat / maxValue) * 100;
+
+            const barChart = document.querySelector('.bar-chart');
+            if (barChart) {
+                barChart.innerHTML = `
+                    <div class="bar" style="height: ${proteinHeight}%; margin-top: ${100 - proteinHeight}%;">
+                        <div class="bar-value">${Math.round(totalProtein)}g</div>
+                        <div class="bar-label">Protein</div>
+                    </div>
+                    <div class="bar" style="height: ${carbsHeight}%; margin-top: ${100 - carbsHeight}%;">
+                        <div class="bar-value">${Math.round(totalCarbs)}g</div>
+                        <div class="bar-label">Carbs</div>
+                    </div>
+                    <div class="bar" style="height: ${fatHeight}%; margin-top: ${100 - fatHeight}%;">
+                        <div class="bar-value">${Math.round(totalFat)}g</div>
+                        <div class="bar-label">Fat</div>
+                    </div>
+                `;
+            }
+        }
+
+        function selectActivity(btn, cal) {
+            document.querySelectorAll('.activity-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('calorieGoal').value = cal;
+        }
+
+        function generatePlan() {
+            const goal = parseInt(document.getElementById('calorieGoal').value);
+            if (goal < 800 || goal > 3000) {
+                alert('Please enter a calorie goal between 800 and 3000');
+                return;
+            }
+
+            const planOutput = document.getElementById('plan-output');
+            planOutput.innerHTML = `
+                <div class="analysis-result" style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 20px; color: #999;">Generating personalized meal plan...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const breakfastCal = Math.round(goal * 0.25);
+                const lunchCal = Math.round(goal * 0.35);
+                const dinnerCal = Math.round(goal * 0.30);
+                const snackCal = goal - breakfastCal - lunchCal - dinnerCal;
+
+                planOutput.innerHTML = `
+                    <div class="analysis-result">
+                        <h3 style="margin-bottom: 24px; font-size: 18px; font-weight: 700;">Your ${goal} Calorie Meal Plan</h3>
+                        
+                        <div class="meal-log-item">
+                            <div class="meal-log-info">
+                                <div class="meal-log-name">🌅 Breakfast</div>
+                                <div class="meal-log-time">Oats with berries, almonds & yogurt</div>
+                            </div>
+                            <div class="meal-log-cal">${breakfastCal} cal</div>
+                        </div>
+
+                        <div class="meal-log-item">
+                            <div class="meal-log-info">
+                                <div class="meal-log-name">🥗 Lunch</div>
+                                <div class="meal-log-time">Grilled chicken with quinoa & vegetables</div>
+                            </div>
+                            <div class="meal-log-cal">${lunchCal} cal</div>
+                        </div>
+
+                        <div class="meal-log-item">
+                            <div class="meal-log-info">
+                                <div class="meal-log-name">🍽️ Dinner</div>
+                                <div class="meal-log-time">Baked salmon with sweet potato & broccoli</div>
+                            </div>
+                            <div class="meal-log-cal">${dinnerCal} cal</div>
+                        </div>
+
+                        <div class="meal-log-item">
+                            <div class="meal-log-info">
+                                <div class="meal-log-name">🍎 Snack</div>
+                                <div class="meal-log-time">Protein shake or fruit & nuts</div>
+                            </div>
+                            <div class="meal-log-cal">${snackCal} cal</div>
+                        </div>
+
+                        <h3 style="margin-top: 28px; margin-bottom: 16px; font-size: 16px; font-weight: 700;">AI Insights</h3>
+                        <div class="rec-card">
+                            <div class="rec-title">🎯 Daily Target</div>
+                            <div class="rec-desc">You should aim for approximately ${goal} calories per day. This plan balances all macronutrients for optimal health.</div>
+                        </div>
+                        <div class="rec-card">
+                            <div class="rec-title">💪 Protein Recommendations</div>
+                            <div class="rec-desc">Aim for 1.6-2.2g of protein per kg of body weight for muscle maintenance and recovery.</div>
+                        </div>
+                        <div class="rec-card">
+                            <div class="rec-title">💧 Hydration</div>
+                            <div class="rec-desc">Drink at least 8 glasses of water daily to support metabolism and nutrient absorption.</div>
+                        </div>
+                    </div>
+                `;
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
         * {
             margin: 0;
             padding: 0;
