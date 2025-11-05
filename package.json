@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:web": "mkdir -p dist && cp public/index.html dist/index.html"
+    "build:web": "mkdir -p dist && cp public/index.html dist/index.html && cp -r public/videos dist/ 2>/dev/null || true"
   },
   "dependencies": {
     "expo": "^49.0.0",
