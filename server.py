@@ -1,22 +1,17 @@
 """
-Hugging Face Food Recognition Backend
-Uses transformers library to identify food from images
+NutriCheck Backend - Lightweight Hugging Face Integration
+Pure Python stdlib - no heavy dependencies needed!
 """
-from flask import Flask, request, jsonify
-from transformers import pipeline
-from PIL import Image
-import io
-import base64
+import json
+import urllib.request
+import sys
 import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-app = Flask(__name__)
+HF_API_TOKEN = os.getenv("HF_API_TOKEN", "")
+HF_MODEL_URL = "https://api-inference.huggingface.co/models/microsoft/resnet-50"
 
-# Initialize the food classification model
-# Using "microsoft/resnet-50" fine-tuned on Food-101 dataset
-print("Loading Hugging Face model... (first run takes ~1-2 min)")
-classifier = pipeline("image-classification", model="microsoft/resnet-50")
-
-# Nutrition database mapping food names to nutrition info
+# Nutrition database
 NUTRITION_DB = {
     'pizza': {'cal': 580, 'protein': 24, 'carbs': 58, 'fat': 28},
     'burger': {'cal': 540, 'protein': 28, 'carbs': 44, 'fat': 24},
@@ -36,75 +31,110 @@ NUTRITION_DB = {
 }
 
 def match_nutrition(food_label):
-    """Find best matching nutrition data for food label"""
+    """Find best matching nutrition"""
     label_lower = food_label.lower()
     
-    # Exact match
     if label_lower in NUTRITION_DB:
         return NUTRITION_DB[label_lower], label_lower
     
-    # Partial match (prioritize longest match)
-    matches = []
-    for key in NUTRITION_DB:
-        if key in label_lower:
-            matches.append((key, len(key)))
-    
+    matches = [(k, len(k)) for k in NUTRITION_DB if k in label_lower]
     if matches:
         best_match = max(matches, key=lambda x: x[1])[0]
         return NUTRITION_DB[best_match], best_match
     
-    # Default if no match
     return {'cal': 350, 'protein': 25, 'carbs': 35, 'fat': 15}, label_lower
 
-@app.route('/api/recognize', methods=['POST'])
-def recognize_food():
-    """Analyze food image using Hugging Face"""
+def analyze_image(image_bytes):
+    """Call Hugging Face API"""
     try:
-        if 'image' not in request.files:
-            return jsonify({'error': 'No image provided'}), 400
+        headers = {'Content-Type': 'application/octet-stream'}
+        if HF_API_TOKEN:
+            headers['Authorization'] = f'Bearer {HF_API_TOKEN}'
         
-        file = request.files['image']
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+        req = urllib.request.Request(HF_MODEL_URL, data=image_bytes, headers=headers, method='POST')
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = json.loads(response.read().decode())
         
-        # Read and process image
-        image_data = file.read()
-        image = Image.open(io.BytesIO(image_data))
+        if isinstance(result, dict) and 'error' in result:
+            return None
         
-        # Resize for faster processing
-        image.thumbnail((512, 512))
-        
-        # Use Hugging Face to classify
-        results = classifier(image)
-        
-        if not results:
-            return jsonify({'error': 'Could not analyze image'}), 400
-        
-        # Get top result
-        top_result = results[0]
-        food_label = top_result['label']
-        confidence = top_result['score']
-        
-        # Get nutrition data
-        nutrition, matched_food = match_nutrition(food_label)
-        
-        return jsonify({
-            'name': food_label.title(),
-            'confidence': round(confidence * 100, 1),
-            'cal': nutrition['cal'],
-            'protein': nutrition['protein'],
-            'carbs': nutrition['carbs'],
-            'fat': nutrition['fat'],
-            'matched_food': matched_food
-        })
-    
+        return result[0] if isinstance(result, list) and len(result) > 0 else None
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"API Error: {e}")
+        return None
 
-@app.route('/api/health', methods=['GET'])
-def health():
-    """Health check endpoint"""
-    return jsonify({'status': 'ok', 'model': 'Hugging Face ResNet-50'})
+class RequestHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/api/recognize':
+            content_length = int(self.headers.get('Content-Length', 0))
+            image_data = self.rfile.read(content_length) if content_length > 0 else b''
+            
+            result = analyze_image(image_data)
+            
+            if result:
+                food_label = result.get('label', 'Food')
+                confidence = result.get('score', 0)
+                nutrition, matched_food = match_nutrition(food_label)
+                response = {
+                    'name': food_label.title(),
+                    'confidence': round(confidence * 100, 1),
+                    'cal': nutrition['cal'],
+                    'protein': nutrition['protein'],
+                    'carbs': nutrition['carbs'],
+                    'fat': nutrition['fat'],
+                    'matched_food': matched_food,
+                    'fallback': False
+                }
+            else:
+                response = {
+                    'name': 'Healthy Meal',
+                    'confidence': 0,
+                    'cal': 400,
+                    'protein': 25,
+                    'carbs': 40,
+                    'fat': 15,
+                    'matched_food': 'meal',
+                    'fallback': True
+                }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(response).encode())
+        
+        elif self.path == '/api/health':
+            response = {'status': 'ok', 'model': 'ResNet-50', 'token_set': bool(HF_API_TOKEN)}
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(response).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+    
+    def log_message(self, format, *args):
+        print(f"[{self.client_address[0]}] {format % args}")
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000, host='0.0.0.0')
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
+    print("🍽️ NutriCheck Backend Ready!")
+    print(f"📍 Server: http://localhost:{port}")
+    print(f"🤖 Using Hugging Face Inference API (cloud-based)")
+    print(f"🔑 Token set: {bool(HF_API_TOKEN)}")
+    print("Ready for image uploads!\n")
+    
+    server = HTTPServer(('0.0.0.0', port), RequestHandler)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n✅ Server stopped")
+        server.server_close()

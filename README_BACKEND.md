@@ -12,20 +12,27 @@ A full-stack nutrition app with real AI-powered food recognition using Hugging F
 
 ### **With Real AI (Backend Server)**
 
-#### **1. Install Dependencies**
+### **1. Install Dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-#### **2. Start the Backend Server**
+#### **2. Get Hugging Face API Token (Optional)**
+- Sign up at https://huggingface.co
+- Get free API token from https://huggingface.co/settings/tokens
+- Set environment variable: `set HF_API_TOKEN=your_token_here`
+- Without token: Uses rate-limited free tier (still works!)
+
+#### **3. Start the Backend Server**
 ```bash
 python server.py
 ```
 
 The server will:
-- Load the Hugging Face model (first run: ~1-2 minutes)
 - Start on `http://localhost:5000`
+- Use Hugging Face Inference API (no large model downloads!)
 - Provide `/api/recognize` endpoint for image analysis
+- Fallback to mock data if API limits reached
 
 #### **3. Open Frontend**
 - Local: http://localhost:3000 (if running locally)
@@ -49,7 +56,9 @@ Frontend (HTML/JS/CSS)
     ↓
 Backend Server (Flask)
     ↓
-Hugging Face Model (ResNet-50)
+Hugging Face Inference API (via HTTP)
+    ↓
+ResNet-50 Model (remote)
     ↓
 Nutrition Database Match
     ↓
@@ -57,6 +66,8 @@ Response: Food name + Calories + Macros
     ↓
 Frontend displays results
 ```
+
+**No local PyTorch needed!** Uses cloud-based Hugging Face API
 
 ### **Features:**
 

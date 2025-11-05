@@ -6,7 +6,10 @@ pip install -r requirements.txt
 echo.
 echo ✅ Starting server on http://localhost:5000
 echo.
-echo First run will download the AI model (~350MB, takes 1-2 minutes)
+echo (Optional) Set Hugging Face token for unlimited requests:
+echo set HF_API_TOKEN=your_token_here
+echo.
+echo Without token: Uses free tier with rate limiting (still works!)
 echo.
 python server.py
 pause
