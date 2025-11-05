@@ -158,14 +158,45 @@
 
         function analyzeImage() {
             const fileInput = document.getElementById('fileInput');
-            const filename = fileInput.files[0]?.name || 'meal';
-            const area = document.getElementById('analysis-area');
-            area.innerHTML = '<div class="analysis-result"><div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p style="margin-top: 16px; color: #999;">Analyzing meal with AI...</p></div></div>';
+            const file = fileInput.files[0];
+            if (!file) return;
             
-            setTimeout(() => {
-                const meal = recognizeFood(filename);
-                area.innerHTML = `<div class="analysis-result">
-                    <h3 style="color: #26d07c; margin-bottom: 24px;">✨ Analysis Complete</h3>
+            const area = document.getElementById('analysis-area');
+            area.innerHTML = '<div class="analysis-result"><div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p style="margin-top: 16px; color: #999;">🤖 Analyzing with Hugging Face AI...</p></div></div>';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Call backend API
+            fetch('/api/recognize', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    // Fallback to mock if API unavailable
+                    const meal = recognizeFood(file.name);
+                    showAnalysisResult(meal, file.name);
+                } else {
+                    // Real AI result
+                    showAnalysisResult(data, file.name, data.confidence);
+                }
+            })
+            .catch(err => {
+                // Fallback to mock recognition
+                console.log('API unavailable, using mock recognition:', err);
+                const meal = recognizeFood(file.name);
+                showAnalysisResult(meal, file.name);
+            });
+        }
+        
+        function showAnalysisResult(meal, filename, confidence) {
+            const area = document.getElementById('analysis-area');
+            const confidenceText = confidence ? ` (${confidence}% confident)` : '';
+            area.innerHTML = `<div class="analysis-result">
+                    <h3 style="color: #26d07c; margin-bottom: 24px;">✨ Analysis Complete${confidenceText}</h3>
                     <h4 style="font-size: 20px; margin-bottom: 16px;">${meal.name}</h4>
                     <div class="nutrition-grid">
                         <div class="nutrition-item">
@@ -191,7 +222,6 @@
                     </div>
                     <button class="btn btn-primary" style="margin-top: 24px; width: 100%; background: #26d07c; color: #0f0f0f;" onclick="addMeal('${meal.name}', ${meal.cal}, ${meal.protein}, ${meal.carbs}, ${meal.fat})">✓ Add to Meal Log</button>
                 </div>`;
-            }, 2500);
         }
 
         function addMeal(name, cal, protein, carbs, fat) {
