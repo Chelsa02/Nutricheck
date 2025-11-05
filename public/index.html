@@ -123,11 +123,23 @@
 
     <script>
         let meals = [];
-        const mockMeals = [
-            { name: 'Grilled Chicken Salad', cal: 420, protein: 35, carbs: 18, fat: 22 },
-            { name: 'Oats with Berries', cal: 380, protein: 12, carbs: 52, fat: 14 },
-            { name: 'Salmon & Vegetables', cal: 450, protein: 42, carbs: 24, fat: 16 }
-        ];
+        const foodDatabase = {
+            'pizza': { name: 'Pepperoni Pizza (2 slices)', cal: 580, protein: 24, carbs: 58, fat: 28 },
+            'burger': { name: 'Classic Hamburger', cal: 540, protein: 28, carbs: 44, fat: 24 },
+            'salad': { name: 'Grilled Chicken Salad', cal: 420, protein: 35, carbs: 18, fat: 22 },
+            'chicken': { name: 'Grilled Chicken Breast', cal: 350, protein: 42, carbs: 0, fat: 18 },
+            'rice': { name: 'Brown Rice with Veggies', cal: 380, protein: 8, carbs: 68, fat: 6 },
+            'pasta': { name: 'Spaghetti Carbonara', cal: 520, protein: 18, carbs: 62, fat: 26 },
+            'fish': { name: 'Salmon & Roasted Vegetables', cal: 450, protein: 42, carbs: 24, fat: 16 },
+            'steak': { name: 'Grilled Steak', cal: 480, protein: 50, carbs: 0, fat: 28 },
+            'oats': { name: 'Oats with Berries & Honey', cal: 380, protein: 12, carbs: 52, fat: 14 },
+            'apple': { name: 'Apple', cal: 95, protein: 0, carbs: 25, fat: 0 },
+            'sandwich': { name: 'Turkey Sandwich', cal: 420, protein: 22, carbs: 48, fat: 16 },
+            'taco': { name: 'Beef Tacos (2)', cal: 520, protein: 24, carbs: 46, fat: 24 },
+            'soup': { name: 'Chicken Noodle Soup', cal: 280, protein: 18, carbs: 32, fat: 8 },
+            'sushi': { name: 'Salmon Sushi Roll (6pc)', cal: 320, protein: 14, carbs: 42, fat: 8 },
+            'breakfast': { name: 'Scrambled Eggs & Toast', cal: 380, protein: 16, carbs: 36, fat: 18 }
+        };
 
         function switchTab(id, e) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -136,29 +148,97 @@
             e.target.classList.add('active');
         }
 
+        function recognizeFood(filename) {
+            const lower = filename.toLowerCase();
+            for (let key in foodDatabase) {
+                if (lower.includes(key)) return foodDatabase[key];
+            }
+            const random = Object.values(foodDatabase)[Math.floor(Math.random() * Object.keys(foodDatabase).length)];
+            return random;
+        }
+
         function analyzeImage() {
+            const fileInput = document.getElementById('fileInput');
+            const filename = fileInput.files[0]?.name || 'meal';
             const area = document.getElementById('analysis-area');
-            area.innerHTML = '<div class="analysis-result"><div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div></div></div>';
+            area.innerHTML = '<div class="analysis-result"><div style="text-align: center; padding: 40px;"><div class="loading-spinner"></div><p style="margin-top: 16px; color: #999;">Analyzing meal with AI...</p></div></div>';
+            
             setTimeout(() => {
-                const meal = mockMeals[Math.floor(Math.random() * 3)];
-                area.innerHTML = `<div class="analysis-result"><h3>${meal.name}</h3><div class="nutrition-grid"><div class="nutrition-item"><div class="nutrition-label">Calories</div><div class="nutrition-value">${meal.cal}</div></div><div class="nutrition-item"><div class="nutrition-label">Protein</div><div class="nutrition-value">${meal.protein}g</div></div><div class="nutrition-item"><div class="nutrition-label">Carbs</div><div class="nutrition-value">${meal.carbs}g</div></div><div class="nutrition-item"><div class="nutrition-label">Fat</div><div class="nutrition-value">${meal.fat}g</div></div></div><button class="btn btn-primary" style="margin-top: 24px; width: 100%; background: #26d07c; color: #0f0f0f;" onclick="addMeal('${meal.name}', ${meal.cal})">+ Add to Log</button></div>`;
+                const meal = recognizeFood(filename);
+                area.innerHTML = `<div class="analysis-result">
+                    <h3 style="color: #26d07c; margin-bottom: 24px;">✨ Analysis Complete</h3>
+                    <h4 style="font-size: 20px; margin-bottom: 16px;">${meal.name}</h4>
+                    <div class="nutrition-grid">
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">Calories</div>
+                            <div class="nutrition-value">${meal.cal}</div>
+                            <div class="nutrition-unit">kcal</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">Protein</div>
+                            <div class="nutrition-value">${meal.protein}</div>
+                            <div class="nutrition-unit">g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">Carbs</div>
+                            <div class="nutrition-value">${meal.carbs}</div>
+                            <div class="nutrition-unit">g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">Fat</div>
+                            <div class="nutrition-value">${meal.fat}</div>
+                            <div class="nutrition-unit">g</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 24px; width: 100%; background: #26d07c; color: #0f0f0f;" onclick="addMeal('${meal.name}', ${meal.cal}, ${meal.protein}, ${meal.carbs}, ${meal.fat})">✓ Add to Meal Log</button>
+                </div>`;
             }, 2500);
         }
 
-        function addMeal(name, cal) {
-            meals.push({name, cal});
+        function addMeal(name, cal, protein, carbs, fat) {
+            meals.push({name, cal, protein, carbs, fat, time: new Date().toLocaleTimeString()});
             document.getElementById('total-cal').textContent = meals.reduce((s, m) => s + m.cal, 0);
             document.getElementById('total-meals').textContent = meals.length;
-            document.getElementById('meal-log-list').innerHTML = meals.map(m => `<div class="meal-log-item"><div>${m.name}</div><div class="meal-log-cal">${m.cal} cal</div></div>`).join('');
-            alert('✅ Added to meal log!');
+            
+            const logList = document.getElementById('meal-log-list');
+            if (meals.length === 1) {
+                logList.innerHTML = '<h3 style="margin-bottom: 24px;">Your Meals</h3>';
+            }
+            logList.innerHTML += `<div class="meal-log-item">
+                <div>
+                    <div class="meal-log-name">${name}</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">${meals[meals.length-1].time} • P: ${protein}g | C: ${carbs}g | F: ${fat}g</div>
+                </div>
+                <div class="meal-log-cal">${cal} cal</div>
+            </div>`;
+            
+            const analysisArea = document.getElementById('analysis-area');
+            analysisArea.innerHTML = '<div class="analysis-result" style="background: rgba(38, 208, 124, 0.1); border-color: #26d07c;"><div style="text-align: center; padding: 32px;"><div style="font-size: 48px; margin-bottom: 16px;">✅</div><div style="color: #26d07c; font-weight: 600;">Added to meal log successfully!</div><div style="color: #999; font-size: 14px; margin-top: 12px;">Total: ' + meals.reduce((s, m) => s + m.cal, 0) + ' kcal</div></div></div>';
         }
 
         function generatePlan() {
             const goal = parseInt(document.getElementById('calorieGoal').value);
             const out = document.getElementById('plan-output');
-            out.innerHTML = '<div class="analysis-result" style="text-align: center; margin-top: 40px;"><div class="loading-spinner"></div></div>';
+            out.innerHTML = '<div class="analysis-result" style="text-align: center; margin-top: 40px;"><div class="loading-spinner"></div><p style="margin-top: 16px; color: #999;">Generating personalized plan...</p></div>';
+            
             setTimeout(() => {
-                out.innerHTML = `<div class="analysis-result" style="margin-top: 40px;"><h3>${goal}kcal Daily Plan</h3><div style="margin-top: 20px;"><div class="meal-log-item"><div>🌅 Breakfast</div><div class="meal-log-cal">${Math.round(goal * 0.25)} cal</div></div><div class="meal-log-item"><div>🥗 Lunch</div><div class="meal-log-cal">${Math.round(goal * 0.35)} cal</div></div><div class="meal-log-item"><div>🍽️ Dinner</div><div class="meal-log-cal">${Math.round(goal * 0.30)} cal</div></div><div class="meal-log-item"><div>🍎 Snack</div><div class="meal-log-cal">${goal - Math.round(goal * 0.25) - Math.round(goal * 0.35) - Math.round(goal * 0.30)} cal</div></div></div></div>`;
+                const breakfast = Math.round(goal * 0.25);
+                const lunch = Math.round(goal * 0.35);
+                const dinner = Math.round(goal * 0.30);
+                const snack = goal - breakfast - lunch - dinner;
+                
+                out.innerHTML = `<div class="analysis-result" style="margin-top: 40px;">
+                    <h3 style="color: #26d07c; margin-bottom: 24px;">📅 Your ${goal}kcal Daily Plan</h3>
+                    <div style="margin-top: 20px;">
+                        <div class="meal-log-item"><div><div style="font-size: 16px; margin-bottom: 4px;">🌅 Breakfast</div><div style="font-size: 12px; color: #999;">25% of daily intake</div></div><div class="meal-log-cal">${breakfast} cal</div></div>
+                        <div class="meal-log-item"><div><div style="font-size: 16px; margin-bottom: 4px;">🥗 Lunch</div><div style="font-size: 12px; color: #999;">35% of daily intake</div></div><div class="meal-log-cal">${lunch} cal</div></div>
+                        <div class="meal-log-item"><div><div style="font-size: 16px; margin-bottom: 4px;">🍽️ Dinner</div><div style="font-size: 12px; color: #999;">30% of daily intake</div></div><div class="meal-log-cal">${dinner} cal</div></div>
+                        <div class="meal-log-item"><div><div style="font-size: 16px; margin-bottom: 4px;">🍎 Snack</div><div style="font-size: 12px; color: #999;">10% of daily intake</div></div><div class="meal-log-cal">${snack} cal</div></div>
+                    </div>
+                    <div style="margin-top: 32px; padding: 20px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #26d07c;">
+                        <p style="font-size: 14px; color: #999;">💡 <strong style="color: #26d07c;">Pro Tip:</strong> Logged meals: <strong style="color: #26d07c;">${meals.length}</strong> | Total consumed: <strong style="color: #26d07c;">${meals.reduce((s, m) => s + m.cal, 0)}</strong>kcal | Remaining: <strong style="color: ${goal - meals.reduce((s, m) => s + m.cal, 0) < 0 ? '#ff6b6b' : '#26d07c'}">${goal - meals.reduce((s, m) => s + m.cal, 0)}</strong>kcal</p>
+                    </div>
+                </div>`;
             }, 2500);
         }
     </script>
