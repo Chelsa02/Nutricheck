@@ -28,20 +28,59 @@ NUTRITION_DB = {
     'taco': {'cal': 520, 'protein': 24, 'carbs': 46, 'fat': 24},
     'soup': {'cal': 280, 'protein': 18, 'carbs': 32, 'fat': 8},
     'sushi': {'cal': 320, 'protein': 14, 'carbs': 42, 'fat': 8},
+    'bread': {'cal': 265, 'protein': 9, 'carbs': 49, 'fat': 3},
+    'fruit': {'cal': 80, 'protein': 1, 'carbs': 21, 'fat': 0},
+    'vegetable': {'cal': 35, 'protein': 2, 'carbs': 7, 'fat': 0},
+    'meat': {'cal': 250, 'protein': 35, 'carbs': 0, 'fat': 11},
+}
+
+# Food synonyms and keywords
+FOOD_SYNONYMS = {
+    'apple': ['apple', 'fruit', 'granny smith', 'red delicious'],
+    'pizza': ['pizza', 'pizzas', 'pepperoni', 'margherita'],
+    'burger': ['burger', 'hamburger', 'cheeseburger', 'beef'],
+    'salad': ['salad', 'greens', 'lettuce', 'vegetable'],
+    'chicken': ['chicken', 'poultry', 'breast', 'wings'],
+    'fish': ['fish', 'seafood', 'salmon', 'tuna', 'cod'],
+    'rice': ['rice', 'pilaf', 'grain'],
+    'pasta': ['pasta', 'noodle', 'spaghetti', 'linguine'],
 }
 
 def match_nutrition(food_label):
-    """Find best matching nutrition"""
-    label_lower = food_label.lower()
+    """Find best matching nutrition with synonym support"""
+    label_lower = food_label.lower().strip()
     
+    # Exact match
     if label_lower in NUTRITION_DB:
         return NUTRITION_DB[label_lower], label_lower
     
+    # Check synonyms
+    for main_food, synonyms in FOOD_SYNONYMS.items():
+        for synonym in synonyms:
+            if synonym in label_lower:
+                if main_food in NUTRITION_DB:
+                    return NUTRITION_DB[main_food], main_food
+    
+    # Partial word match (longest first)
     matches = [(k, len(k)) for k in NUTRITION_DB if k in label_lower]
     if matches:
         best_match = max(matches, key=lambda x: x[1])[0]
         return NUTRITION_DB[best_match], best_match
     
+    # Reverse: check if label_lower contains any food words
+    for food_key in NUTRITION_DB:
+        if food_key in label_lower:
+            return NUTRITION_DB[food_key], food_key
+    
+    # Check if food name contains common keywords
+    if any(word in label_lower for word in ['fruit', 'apple', 'berry']):
+        return NUTRITION_DB['fruit'], 'fruit'
+    elif any(word in label_lower for word in ['vegetable', 'salad', 'greens']):
+        return NUTRITION_DB['vegetable'], 'vegetable'
+    elif any(word in label_lower for word in ['meat', 'steak', 'beef']):
+        return NUTRITION_DB['meat'], 'meat'
+    
+    # Default fallback
     return {'cal': 350, 'protein': 25, 'carbs': 35, 'fat': 15}, label_lower
 
 def analyze_image(image_bytes):
